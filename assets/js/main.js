@@ -1,252 +1,265 @@
-/**
-* Template Name: Personal - v4.9.1
-* Template URL: https://bootstrapmade.com/personal-free-resume-bootstrap-template/
-* Author: BootstrapMade.com
-* License: https://bootstrapmade.com/license/
-*/
-(function() {
-  "use strict";
+document.addEventListener('DOMContentLoaded', () => {
+  // Modern selector helper with optional chaining
+  const select = (selector, all = false) => {
+    selector = selector?.trim();
+    return all 
+      ? [...document.querySelectorAll(selector)] 
+      : document.querySelector(selector);
+  };
 
-  /**
-   * Easy selector helper function
-   */
-  const select = (el, all = false) => {
-    el = el.trim()
-    if (all) {
-      return [...document.querySelectorAll(el)]
+  // Modern event listener helper
+  const on = (event, selector, handler, all = false) => {
+    const elements = select(selector, all);
+    if (!elements) return;
+    
+    if (Array.isArray(elements)) {
+      elements.forEach(el => el.addEventListener(event, handler));
     } else {
-      return document.querySelector(el)
+      elements.addEventListener(event, handler);
     }
-  }
+  };
 
-  /**
-   * Easy event listener function
-   */
-  const on = (type, el, listener, all = false) => {
-    let selectEl = select(el, all)
+  // Improved scroll function with offset
+  const scrollTo = (element) => {
+    const el = select(element);
+    if (!el) return;
+    
+    const headerHeight = select('#header')?.offsetHeight || 0;
+    const elementPosition = el.getBoundingClientRect().top + window.pageYOffset;
+    const offsetPosition = elementPosition - headerHeight;
 
-    if (selectEl) {
-      if (all) {
-        selectEl.forEach(e => e.addEventListener(type, listener))
-      } else {
-        selectEl.addEventListener(type, listener)
-      }
-    }
-  }
-
-  /**
-   * Scrolls to an element with header offset
-   */
-  const scrollto = (el) => {
     window.scrollTo({
-      top: 0,
+      top: offsetPosition,
       behavior: 'smooth'
-    })
-  }
+    });
+  };
 
-  /**
-   * Mobile nav toggle
-   */
-  on('click', '.mobile-nav-toggle', function(e) {
-    select('#navbar').classList.toggle('navbar-mobile')
-    this.classList.toggle('bi-list')
-    this.classList.toggle('bi-x')
-  })
+  // Mobile nav toggle
+  on('click', '.mobile-nav-toggle', (e) => {
+    const navbar = select('#navbar');
+    navbar?.classList.toggle('navbar-mobile');
+    e.currentTarget?.classList.toggle('bi-list');
+    e.currentTarget?.classList.toggle('bi-x');
+  });
 
-  /**
-   * Scrool with ofset on links with a class name .scrollto
-   */
-  on('click', '#navbar .nav-link', function(e) {
-    let section = select(this.hash)
-    if (section) {
-      e.preventDefault()
+  // Nav link click handler
+  on('click', '#navbar .nav-link', (e) => {
+    const hash = e.currentTarget?.hash;
+    const section = hash && select(hash);
+    if (!section) return;
+    
+    e.preventDefault();
 
-      let navbar = select('#navbar')
-      let header = select('#header')
-      let sections = select('section', true)
-      let navlinks = select('#navbar .nav-link', true)
+    const navbar = select('#navbar');
+    const header = select('#header');
+    const sections = select('section', true);
+    const navLinks = select('#navbar .nav-link', true);
 
-      navlinks.forEach((item) => {
-        item.classList.remove('active')
-      })
+    // Update active class
+    navLinks?.forEach(item => item.classList.remove('active'));
+    e.currentTarget?.classList.add('active');
 
-      this.classList.add('active')
-
-      if (navbar.classList.contains('navbar-mobile')) {
-        navbar.classList.remove('navbar-mobile')
-        let navbarToggle = select('.mobile-nav-toggle')
-        navbarToggle.classList.toggle('bi-list')
-        navbarToggle.classList.toggle('bi-x')
-      }
-
-      if (this.hash == '#header') {
-        header.classList.remove('header-top')
-        sections.forEach((item) => {
-          item.classList.remove('section-show')
-        })
-        return;
-      }
-
-      if (!header.classList.contains('header-top')) {
-        header.classList.add('header-top')
-        setTimeout(function() {
-          sections.forEach((item) => {
-            item.classList.remove('section-show')
-          })
-          section.classList.add('section-show')
-
-        }, 350);
-      } else {
-        sections.forEach((item) => {
-          item.classList.remove('section-show')
-        })
-        section.classList.add('section-show')
-      }
-
-      scrollto(this.hash)
+    // Handle mobile navbar
+    if (navbar?.classList.contains('navbar-mobile')) {
+      navbar.classList.remove('navbar-mobile');
+      const toggle = select('.mobile-nav-toggle');
+      toggle?.classList.toggle('bi-list');
+      toggle?.classList.toggle('bi-x');
     }
-  }, true)
 
-  /**
-   * Activate/show sections on load with hash links
-   */
-  window.addEventListener('load', () => {
-    if (window.location.hash) {
-      let initial_nav = select(window.location.hash)
+    // Handle header section
+    if (hash === '#header') {
+      header?.classList.remove('header-top');
+      sections?.forEach(item => item.classList.remove('section-show'));
+      return;
+    }
 
-      if (initial_nav) {
-        let header = select('#header')
-        let navlinks = select('#navbar .nav-link', true)
+    // Show section with animation
+    const showSection = () => {
+      sections?.forEach(item => item.classList.remove('section-show'));
+      section.classList.add('section-show');
+    };
 
-        header.classList.add('header-top')
+    if (!header?.classList.contains('header-top')) {
+      header?.classList.add('header-top');
+      setTimeout(showSection, 350);
+    } else {
+      showSection();
+    }
 
-        navlinks.forEach((item) => {
-          if (item.getAttribute('href') == window.location.hash) {
-            item.classList.add('active')
-          } else {
-            item.classList.remove('active')
+    scrollTo(hash);
+  }, true);
+
+  // Handle initial hash on load
+  const handleInitialHash = () => {
+    const hash = window.location.hash;
+    if (!hash) return;
+    
+    const section = select(hash);
+    if (!section) return;
+
+    const header = select('#header');
+    const navLinks = select('#navbar .nav-link', true);
+
+    header?.classList.add('header-top');
+
+    navLinks?.forEach(item => {
+      item.classList.toggle('active', item.getAttribute('href') === hash);
+    });
+
+    setTimeout(() => {
+      section.classList.add('section-show');
+    }, 350);
+
+    scrollTo(hash);
+  };
+
+  // Initialize everything
+  const init = () => {
+    handleInitialHash();
+
+    // Skills animation
+    const skillsContent = select('.skills-content');
+    if (skillsContent) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const progressBars = select('.progress .progress-bar', true);
+            progressBars?.forEach(bar => {
+              bar.style.width = bar.getAttribute('aria-valuenow') + '%';
+            });
+            observer.disconnect();
           }
-        })
-
-        setTimeout(function() {
-          initial_nav.classList.add('section-show')
-        }, 350);
-
-        scrollto(window.location.hash)
-      }
-    }
-  });
-
-  /**
-   * Skills animation
-   */
-  let skilsContent = select('.skills-content');
-  if (skilsContent) {
-    new Waypoint({
-      element: skilsContent,
-      offset: '80%',
-      handler: function(direction) {
-        let progress = select('.progress .progress-bar', true);
-        progress.forEach((el) => {
-          el.style.width = el.getAttribute('aria-valuenow') + '%'
         });
-      }
-    })
-  }
-
-  /**
-   * Testimonials slider
-   */
-  new Swiper('.testimonials-slider', {
-    speed: 600,
-    loop: true,
-    autoplay: {
-      delay: 5000,
-      disableOnInteraction: false
-    },
-    slidesPerView: 'auto',
-    pagination: {
-      el: '.swiper-pagination',
-      type: 'bullets',
-      clickable: true
-    },
-    breakpoints: {
-      320: {
-        slidesPerView: 1,
-        spaceBetween: 20
-      },
-
-      1200: {
-        slidesPerView: 3,
-        spaceBetween: 20
-      }
+      }, { threshold: 0.8 });
+      observer.observe(skillsContent);
     }
-  });
 
-  /**
-   * Porfolio isotope and filter
-   */
-  window.addEventListener('load', () => {
-    let portfolioContainer = select('.portfolio-container');
+    // Testimonials slider
+    new Swiper('.testimonials-slider', {
+      speed: 600,
+      loop: true,
+      autoplay: { delay: 5000, disableOnInteraction: false },
+      slidesPerView: 'auto',
+      pagination: {
+        el: '.swiper-pagination',
+        type: 'bullets',
+        clickable: true
+      },
+      breakpoints: {
+        320: { slidesPerView: 1, spaceBetween: 20 },
+        1200: { slidesPerView: 3, spaceBetween: 20 }
+      }
+    });
+
+    // Portfolio initialization
+    const portfolioContainer = select('.portfolio-container');
     if (portfolioContainer) {
-      let portfolioIsotope = new Isotope(portfolioContainer, {
+      const portfolioIsotope = new Isotope(portfolioContainer, {
         itemSelector: '.portfolio-item',
         layoutMode: 'fitRows'
       });
 
-      let portfolioFilters = select('#portfolio-flters li', true);
-
-      on('click', '#portfolio-flters li', function(e) {
+      on('click', '#portfolio-flters li', (e) => {
         e.preventDefault();
-        portfolioFilters.forEach(function(el) {
-          el.classList.remove('filter-active');
-        });
-        this.classList.add('filter-active');
-
+        const filters = select('#portfolio-flters li', true);
+        filters?.forEach(el => el.classList.remove('filter-active'));
+        e.currentTarget?.classList.add('filter-active');
         portfolioIsotope.arrange({
-          filter: this.getAttribute('data-filter')
+          filter: e.currentTarget?.getAttribute('data-filter')
         });
       }, true);
     }
 
-  });
+    // Lightboxes
+    GLightbox({ selector: '.portfolio-lightbox' });
+    GLightbox({
+      selector: '.portfolio-details-lightbox',
+      width: '90%',
+      height: '90vh'
+    });
 
-  /**
-   * Initiate portfolio lightbox 
-   */
-  const portfolioLightbox = GLightbox({
-    selector: '.portfolio-lightbox'
-  });
+    // Portfolio details slider
+    new Swiper('.portfolio-details-slider', {
+      speed: 400,
+      loop: true,
+      autoplay: { delay: 5000, disableOnInteraction: false },
+      pagination: {
+        el: '.swiper-pagination',
+        type: 'bullets',
+        clickable: true
+      }
+    });
 
-  /**
-   * Initiate portfolio details lightbox 
-   */
-  const portfolioDetailsLightbox = GLightbox({
-    selector: '.portfolio-details-lightbox',
-    width: '90%',
-    height: '90vh'
-  });
-
-  /**
-   * Portfolio details slider
-   */
-  new Swiper('.portfolio-details-slider', {
-    speed: 400,
-    loop: true,
-    autoplay: {
-      delay: 5000,
-      disableOnInteraction: false
-    },
-    pagination: {
-      el: '.swiper-pagination',
-      type: 'bullets',
-      clickable: true
+    // PureCounter
+    if (typeof PureCounter !== 'undefined') {
+      new PureCounter();
     }
-  });
+  };
 
-  /**
-   * Initiate Pure Counter 
-   */
-  new PureCounter();
+  // Start initialization
+  init();
+});
+// Function to calculate age from birthdate
+function calculateAge(birthday) {
+  const birthDate = new Date(birthday);
+  const today = new Date();
+  
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  
+  // If birthday hasn't occurred yet this year, subtract 1
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  
+  return age;
+}
 
-})()
+// Update the age in the DOM
+function updateAge() {
+  const ageElement = document.getElementById('current-age');
+  if (ageElement) {
+    const currentAge = calculateAge('March 25, 1999');
+    ageElement.textContent = currentAge;
+  }
+}
+
+// Call updateAge() when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+  updateAge(); // Add this inside your existing DOMContentLoaded
+  // ... rest of your existing code
+});
+
+function calculateExperience(startDate) {
+  const start = new Date(startDate);
+  const now = new Date();
+  
+  let years = now.getFullYear() - start.getFullYear();
+  let months = now.getMonth() - start.getMonth();
+  
+  if (months < 0) {
+    years--;
+    months += 12;
+  }
+  
+  return { years, months };
+}
+
+function updateExperience() {
+  const expElement = document.getElementById('experience-text');
+  const expResume = document.getElementById('resume-text');
+
+  if (expElement || expResume) {
+    const startYear = 2023;
+    const currentYear = new Date().getFullYear();
+    expElement.textContent = `${currentYear - startYear}`;
+    expResume.textContent = `${currentYear - startYear}`;
+
+  }
+}
+// Initialize when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+  updateExperience();
+  updateAge(); // If you have an age calculation
+});
