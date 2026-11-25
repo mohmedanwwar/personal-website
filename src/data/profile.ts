@@ -29,8 +29,6 @@ export const profile = {
   ],
 };
 
-export const emailjsConfig = {
-  publicKey: "SpuKjkyiFJd6bXDBW",
-  serviceId: "service_1919",
-  templateId: "template_nfgpjzp",
-};
+// Web3Forms access key for the contact form. Messages go to the email this key was created with.
+// It is meant to be public: it can only send to that inbox.
+export const web3formsKey = "31f5d826-9292-493a-a09d-ff1da5084946";

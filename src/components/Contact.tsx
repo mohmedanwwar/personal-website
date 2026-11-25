@@ -1,6 +1,5 @@
 import { useState, type FormEvent } from "react";
-import emailjs from "@emailjs/browser";
-import { emailjsConfig, profile } from "../data/profile";
+import { profile, web3formsKey } from "../data/profile";
 import SectionTitle from "./SectionTitle";
 import Socials from "./Socials";
 import { MailIcon, PhoneIcon, PinIcon, SendIcon } from "./Icons";
@@ -28,19 +27,22 @@ export default function Contact({ toast }: { toast: ToastFn }) {
 
     setSending(true);
     try {
-      await emailjs.send(
-        emailjsConfig.serviceId,
-        emailjsConfig.templateId,
-        {
-          from_name: d.name,
-          from_email: d.email,
-          subject: d.subject || "Message from your portfolio",
+      const res = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          access_key: web3formsKey,
+          subject: `Portfolio: ${d.subject.trim() || "New message"} (from ${d.name})`,
+          from_name: "Portfolio contact form",
+          replyto: d.email,
+          name: d.name,
+          email: d.email,
           message: d.message,
-          to_email: profile.email,
-          reply_to: d.email,
-        },
-        { publicKey: emailjsConfig.publicKey },
-      );
+          botcheck: d.botcheck,
+        }),
+      });
+      const result = await res.json().catch(() => ({}));
+      if (!res.ok || !result.success) throw new Error(result.message || `HTTP ${res.status}`);
       form.reset();
       setLength(0);
       toast("success", `Thanks ${d.name}, your message was sent. I’ll reply to ${d.email} soon.`);
@@ -77,6 +79,8 @@ export default function Contact({ toast }: { toast: ToastFn }) {
       </div>
 
       <form className="contact-form" onSubmit={onSubmit} noValidate>
+        {/* Spam trap: hidden from people, bots fill it and Web3Forms drops those submissions. */}
+        <input type="checkbox" name="botcheck" tabIndex={-1} autoComplete="off" style={{ display: "none" }} />
         <div className="row">
           <label><span>Your name</span><input name="name" autoComplete="name" required /></label>
           <label><span>Your email</span><input name="email" type="email" autoComplete="email" required /></label>

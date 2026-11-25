@@ -32,4 +32,4 @@ Every push to `main` builds the site and publishes it. One-time setup: in the re
 
 ## Contact form
 
-Messages are sent with [EmailJS](https://www.emailjs.com/) using the service and template IDs in `profile.ts`.
+Messages are sent with [Web3Forms](https://web3forms.com/) to the inbox tied to `web3formsKey` in `profile.ts`.
